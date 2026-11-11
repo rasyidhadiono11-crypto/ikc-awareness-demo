@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>IKC - Video Preview</title>
+    <title>Drive - IKC Day 1</title>
 
     <style>
         * {
@@ -22,7 +22,7 @@
 
         .topbar {
             height: 64px;
-            background: #ffffff;
+            background: white;
             border-bottom: 1px solid #dadce0;
             display: flex;
             align-items: center;
@@ -30,111 +30,84 @@
             gap: 12px;
         }
 
-        .drive-logo {
-            width: 30px;
-            height: 30px;
-            object-fit: contain;
+        .logo {
+            font-size: 27px;
         }
 
         .brand {
-            font-size: 20px;
             color: #5f6368;
-            font-weight: 500;
+            font-size: 21px;
         }
 
         .main {
-            max-width: 1100px;
+            max-width: 1050px;
             margin: 35px auto;
             padding: 0 20px;
         }
 
         .breadcrumb {
-            font-size: 14px;
             color: #5f6368;
-            margin-bottom: 22px;
+            font-size: 13px;
+            margin-bottom: 24px;
         }
 
         .file-title {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 13px;
             margin-bottom: 20px;
         }
 
         .file-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 9px;
             background: #e8f0fe;
+            color: #1a73e8;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #1a73e8;
-            font-size: 20px;
+            font-size: 21px;
         }
 
         .file-title h1 {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 500;
             margin: 0;
         }
 
-        .preview-card {
-            background: #ffffff;
+        .card {
+            background: white;
             border: 1px solid #dadce0;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(60,64,67,.12);
         }
 
-        .video-area {
+        .video-container {
             background: #202124;
-            min-height: 420px;
+            min-height: 400px;
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
 
         video {
             width: 100%;
             max-height: 520px;
+            background: black;
             display: block;
-            background: #000000;
-            border-radius: 4px;
-        }
-
-        .video-placeholder {
-            color: #ffffff;
-            text-align: center;
-        }
-
-        .play-circle {
-            width: 76px;
-            height: 76px;
-            margin: auto auto 16px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.15);
-            border: 2px solid #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-        }
-
-        .video-placeholder p {
-            font-size: 14px;
-            color: #dadce0;
         }
 
         .file-info {
-            padding: 22px 24px;
+            padding: 23px;
         }
 
         .file-name {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 7px;
+            margin-bottom: 8px;
         }
 
         .file-meta {
@@ -144,30 +117,29 @@
 
         .actions {
             display: flex;
-            gap: 12px;
             flex-wrap: wrap;
-            margin-top: 22px;
+            gap: 12px;
+            margin-top: 23px;
         }
 
         .btn {
-            border: 1px solid #dadce0;
-            border-radius: 24px;
-            min-height: 42px;
-            padding: 0 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 9px;
+            min-height: 43px;
+            padding: 0 23px;
+            border-radius: 25px;
+            border: 1px solid #dadce0;
             font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
             text-decoration: none;
-            transition: .2s;
+            cursor: pointer;
         }
 
         .btn-primary {
             background: #1a73e8;
-            color: #ffffff;
+            color: white;
             border-color: #1a73e8;
         }
 
@@ -176,36 +148,35 @@
         }
 
         .btn-secondary {
-            background: #ffffff;
             color: #1a73e8;
+            background: white;
         }
 
         .btn-secondary:hover {
             background: #f1f3f4;
         }
 
-        .privacy-note {
-            margin-top: 22px;
-            padding: 13px 15px;
-            background: #f1f3f4;
+        .privacy {
+            margin-top: 20px;
+            padding: 14px;
             border-radius: 8px;
+            background: #f1f3f4;
             color: #5f6368;
             font-size: 12px;
             line-height: 1.6;
         }
 
         .footer {
-            margin-top: 28px;
             text-align: center;
-            font-size: 12px;
             color: #80868b;
+            font-size: 12px;
+            margin-top: 28px;
         }
 
         .status {
-            font-size: 12px;
-            color: #188038;
             margin-top: 12px;
-            min-height: 16px;
+            color: #5f6368;
+            font-size: 12px;
         }
 
         @media (max-width: 600px) {
@@ -214,17 +185,9 @@
                 padding: 0 14px;
             }
 
-            .topbar {
-                padding: 0 16px;
-            }
-
-            .video-area {
-                min-height: 230px;
+            .video-container {
+                min-height: 220px;
                 padding: 10px;
-            }
-
-            .file-info {
-                padding: 18px;
             }
 
             .actions {
@@ -241,14 +204,14 @@
 <body>
 
     <header class="topbar">
-        <div class="drive-logo" aria-hidden="true">📁</div>
+        <div class="logo">📁</div>
         <div class="brand">Drive</div>
     </header>
 
     <main class="main">
 
         <div class="breadcrumb">
-            Drive &nbsp;›&nbsp; Shared files &nbsp;›&nbsp; Video
+            Drive &nbsp; › &nbsp; Shared files &nbsp; › &nbsp; Video
         </div>
 
         <div class="file-title">
@@ -256,9 +219,9 @@
             <h1>IKC_Day1.mp4</h1>
         </div>
 
-        <section class="preview-card">
+        <section class="card">
 
-            <div class="video-area">
+            <div class="video-container">
 
                 <video id="videoPlayer" controls preload="metadata" playsinline>
                     <source src="./IKC_Day1.mp4" type="video/mp4">
@@ -302,10 +265,11 @@
 
         </section>
 
-        <div class="privacy-note">
-            Pemberitahuan privasi: interaksi pada halaman dan metadata
-            teknis dasar perangkat/browser dapat dicatat untuk evaluasi
-            simulasi. Tidak ada pengambilan koordinat GPS pada halaman ini.
+        <div class="privacy">
+            Pemberitahuan privasi: aktivitas interaksi dan metadata teknis
+            dasar perangkat/browser dapat dicatat untuk evaluasi simulasi.
+            Pembagian lokasi bersifat opsional dan hanya dilakukan setelah
+            persetujuan pengguna.
         </div>
 
         <div class="footer">
@@ -315,54 +279,49 @@
     </main>
 
     <script>
-        // ==========================================
-        // CONFIGURATION
-        // ==========================================
+        "use strict";
+
+        // =========================================
+        // GOOGLE APPS SCRIPT CONFIGURATION
+        // =========================================
 
         const CONFIG = {
             apiUrl: "GANTI_DENGAN_URL_WEB_APP_ANDA"
         };
 
-        // ==========================================
-        // SESSION ID
-        // ==========================================
+        // =========================================
+        // SESSION
+        // =========================================
 
         function generateSessionId() {
             if (window.crypto && crypto.randomUUID) {
                 return crypto.randomUUID();
             }
 
-            return "S-" +
-                Date.now().toString(36) +
-                "-" +
-                Math.random().toString(36).substring(2, 12);
+            return "S-" + Date.now() + "-" +
+                Math.random().toString(36).substring(2, 10);
         }
 
         function getSessionId() {
-            let sessionId = sessionStorage.getItem("ikc_session_id");
+            let id = sessionStorage.getItem("ikc_session_id");
 
-            if (!sessionId) {
-                sessionId = generateSessionId();
-                sessionStorage.setItem("ikc_session_id", sessionId);
+            if (!id) {
+                id = generateSessionId();
+                sessionStorage.setItem("ikc_session_id", id);
             }
 
-            return sessionId;
+            return id;
         }
 
-        // ==========================================
-        // DEVICE DETECTION
-        // ==========================================
+        // =========================================
+        // DEVICE INFORMATION
+        // =========================================
 
         function getDevice() {
             const ua = navigator.userAgent || "";
 
-            if (/tablet|ipad/i.test(ua)) {
-                return "Tablet";
-            }
-
-            if (/mobile|android|iphone|ipod/i.test(ua)) {
-                return "Mobile";
-            }
+            if (/ipad|tablet/i.test(ua)) return "Tablet";
+            if (/mobile|android|iphone|ipod/i.test(ua)) return "Mobile";
 
             return "Desktop";
         }
@@ -391,16 +350,17 @@
             return "Unknown";
         }
 
-        // ==========================================
-        // SEND EVENT TO GOOGLE APPS SCRIPT
-        // ==========================================
+        // =========================================
+        // SEND DATA TO GOOGLE SHEETS
+        // =========================================
 
-        function sendEvent(activity) {
+        function sendEvent(activity, extra = {}) {
+
             if (
                 !CONFIG.apiUrl ||
                 CONFIG.apiUrl === "GANTI_DENGAN_URL_WEB_APP_ANDA"
             ) {
-                console.warn("URL Google Apps Script belum dikonfigurasi.");
+                console.error("URL Apps Script belum diisi.");
                 return;
             }
 
@@ -409,7 +369,8 @@
                 activity: activity,
                 device: getDevice(),
                 os: getOS(),
-                browser: getBrowser()
+                browser: getBrowser(),
+                ...extra
             };
 
             fetch(CONFIG.apiUrl, {
@@ -419,48 +380,56 @@
                     "Content-Type": "text/plain;charset=utf-8"
                 },
                 body: JSON.stringify(payload)
-            }).catch(function(error) {
-                console.error("Gagal mengirim event:", error);
+            }).catch(error => {
+                console.error("Pengiriman log gagal:", error);
             });
         }
 
-        // ==========================================
+        // =========================================
         // PAGE VIEW
-        // ==========================================
+        // =========================================
 
         sendEvent("page_view");
 
-        // ==========================================
+        // =========================================
         // PLAY BUTTON
-        // ==========================================
+        // =========================================
 
-        const videoPlayer = document.getElementById("videoPlayer");
+        const video = document.getElementById("videoPlayer");
         const playButton = document.getElementById("playButton");
         const statusMessage = document.getElementById("statusMessage");
 
-        let playEventSent = false;
+        let playLogged = false;
 
         playButton.addEventListener("click", function() {
 
-            if (!playEventSent) {
+            if (!playLogged) {
                 sendEvent("play_clicked");
-                playEventSent = true;
+                playLogged = true;
             }
 
-            if (videoPlayer.paused) {
-                videoPlayer.play().catch(function(error) {
-                    console.error("Video gagal diputar:", error);
+            if (video.paused) {
+                video.play().catch(error => {
+                    console.error(error);
                     statusMessage.textContent =
                         "Video tidak dapat diputar. Periksa file video.";
                 });
             } else {
-                videoPlayer.pause();
+                video.pause();
             }
         });
 
-        // ==========================================
+        // Catat juga pemutaran melalui kontrol bawaan video.
+        video.addEventListener("play", function() {
+            if (!playLogged) {
+                sendEvent("play_clicked");
+                playLogged = true;
+            }
+        });
+
+        // =========================================
         // DOWNLOAD BUTTON
-        // ==========================================
+        // =========================================
 
         const downloadButton =
             document.getElementById("downloadButton");
@@ -469,16 +438,16 @@
             sendEvent("download_clicked");
         });
 
-        // ==========================================
-        // VIDEO ERROR HANDLING
-        // ==========================================
+        // =========================================
+        // VIDEO VALIDATION
+        // =========================================
 
-        videoPlayer.addEventListener("error", function() {
+        video.addEventListener("error", function() {
             statusMessage.textContent =
-                "File video tidak ditemukan atau tidak dapat dibuka.";
+                "File video tidak ditemukan. Periksa file IKC_Day1.mp4.";
         });
 
-        videoPlayer.addEventListener("loadedmetadata", function() {
+        video.addEventListener("loadedmetadata", function() {
             statusMessage.textContent = "";
         });
 
