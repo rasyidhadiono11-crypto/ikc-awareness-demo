@@ -171,7 +171,7 @@
     const playButton = document.getElementById("playButton");
     const downloadButton = document.getElementById("downloadButton");
 
-    // Membuat ID sesi anonim
+    // ID sesi anonim
     function getSessionId() {
       let id = sessionStorage.getItem("ikc_session_id");
 
@@ -183,7 +183,7 @@
       return id;
     }
 
-    // Identifikasi perangkat dan browser
+    // Identifikasi perangkat
     function getDeviceInfo() {
       const ua = navigator.userAgent;
 
@@ -209,7 +209,7 @@
       return { device, os, browser };
     }
 
-    // Mengirim aktivitas ke Google Sheets
+    // Kirim aktivitas ke Google Sheets
     function sendEvent(activity, extra = {}) {
       const info = getDeviceInfo();
 
@@ -235,82 +235,24 @@
       });
     }
 
-    // Mencatat halaman dibuka
+    // Catat halaman dibuka
     sendEvent("page_view");
 
-    // Meminta persetujuan berbagi lokasi
-    function requestLocation(triggeredBy) {
+    // Konfirmasi respons peserta untuk simulasi awareness
+    function askParticipant(triggeredBy) {
 
-      const action = triggeredBy === "play"
-        ? "memutar video"
-        : "mengunduh video";
+      const message = triggeredBy === "play"
+        ? "Video akan diputar.\n\nApakah Anda bersedia berbagi?"
+        : "Video akan diunduh.\n\nApakah Anda bersedia berbagi?";
 
-      const consent = window.confirm(
-        "Anda akan " + action + ".\n\n" +
-        "play dan download " 
-      );
+      const consent = window.confirm(message);
 
-      if (!consent) {
-        sendEvent("location_denied", {
-          location_status: "user_declined",
-          triggered_by: triggeredBy
-        });
+      sendEvent("simulation_response", {
+        triggered_by: triggeredBy,
+        participant_response: consent ? "accepted" : "declined"
+      });
 
-        return;
-      }
-
-      if (!navigator.geolocation) {
-        sendEvent("location_denied", {
-          location_status: "geolocation_unsupported",
-          triggered_by: triggeredBy
-        });
-
-        alert("Browser tidak mendukung fitur lokasi.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-
-        function(position) {
-
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-
-          sendEvent("location_shared", {
-            latitude: latitude,
-            longitude: longitude,
-            location_status: "granted",
-            triggered_by: triggeredBy
-          });
-
-        },
-
-        function(error) {
-
-          let status = "error";
-
-          if (error.code === 1) {
-            status = "permission_denied";
-          } else if (error.code === 2) {
-            status = "position_unavailable";
-          } else if (error.code === 3) {
-            status = "timeout";
-          }
-
-          sendEvent("location_denied", {
-            location_status: status,
-            triggered_by: triggeredBy
-          });
-
-        },
-
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        }
-
-      );
+      return consent;
     }
 
     // Tombol Play
@@ -323,7 +265,7 @@
         console.error("Video playback error:", error);
       });
 
-      requestLocation("play");
+      askParticipant("play");
 
     });
 
@@ -332,8 +274,8 @@
 
       sendEvent("download_clicked");
 
-      // Browser tetap menjalankan unduhan melalui link.
-      requestLocation("download");
+      // Unduhan tetap berjalan melalui link download
+      askParticipant("download");
 
     });
 
