@@ -22,10 +22,10 @@
     .container {
       max-width: 760px;
       margin: 35px auto;
+      padding: 24px;
       background: #fff;
       border: 1px solid #dadce0;
       border-radius: 12px;
-      padding: 24px;
     }
 
     .file-info {
@@ -38,12 +38,12 @@
     .file-icon {
       width: 42px;
       height: 42px;
-      border-radius: 8px;
-      background: #e8f0fe;
-      color: #1967d2;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #e8f0fe;
+      color: #1967d2;
+      border-radius: 8px;
       font-size: 22px;
     }
 
@@ -53,16 +53,16 @@
     }
 
     .file-type {
+      margin-top: 5px;
       color: #5f6368;
       font-size: 13px;
-      margin-top: 5px;
     }
 
     .video-area {
-      background: #202124;
-      border-radius: 9px;
       overflow: hidden;
       margin-bottom: 18px;
+      background: #202124;
+      border-radius: 9px;
     }
 
     video {
@@ -80,15 +80,15 @@
     }
 
     button, .download {
-      border: 0;
-      border-radius: 5px;
-      padding: 11px 18px;
-      font-size: 14px;
-      cursor: pointer;
-      text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 7px;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
     }
 
     button {
@@ -125,6 +125,7 @@
 
     <div class="file-info">
       <div class="file-icon">▶</div>
+
       <div>
         <div class="file-name">IKC_Day1.mp4</div>
         <div class="file-type">Video MP4</div>
@@ -139,6 +140,7 @@
     </div>
 
     <div class="actions">
+
       <button id="playButton" type="button">
         ▶ Play
       </button>
@@ -151,6 +153,7 @@
       >
         ↓ Download
       </a>
+
     </div>
 
     <div class="footer">
@@ -168,7 +171,7 @@
     const playButton = document.getElementById("playButton");
     const downloadButton = document.getElementById("downloadButton");
 
-    // ID sesi anonim
+    // Membuat ID sesi anonim
     function getSessionId() {
       let id = sessionStorage.getItem("ikc_session_id");
 
@@ -180,11 +183,11 @@
       return id;
     }
 
-    // Identifikasi browser dan perangkat
+    // Identifikasi perangkat dan browser
     function getDeviceInfo() {
       const ua = navigator.userAgent;
 
-      let device = /Mobi|Android|iPhone|iPad/i.test(ua)
+      const device = /Mobi|Android|iPhone|iPad/i.test(ua)
         ? "Mobile"
         : "Desktop";
 
@@ -206,7 +209,7 @@
       return { device, os, browser };
     }
 
-    // Kirim aktivitas ke Google Apps Script
+    // Mengirim aktivitas ke Google Sheets
     function sendEvent(activity, extra = {}) {
       const info = getDeviceInfo();
 
@@ -232,19 +235,23 @@
       });
     }
 
-    // Catat halaman dibuka
+    // Mencatat halaman dibuka
     sendEvent("page_view");
 
-    // Permintaan lokasi dengan pemberitahuan dan persetujuan
+    // Meminta persetujuan berbagi lokasi
     function requestLocation(triggeredBy) {
 
+      const action = triggeredBy === "play"
+        ? "memutar video"
+        : "mengunduh video";
+
       const consent = window.confirm(
-        "Simulasi Awareness IKC\n\n" +
+        "Anda akan " + action + ".\n\n" +
         "Apakah Anda bersedia membagikan lokasi perangkat " +
-        "untuk keperluan evaluasi simulasi?\n\n" +
+        "untuk evaluasi simulasi?\n\n" +
         "Jika memilih OK, browser akan meminta izin lokasi. " +
-        "Koordinat hanya dikirim jika izin diberikan.\n\n" +
-        "Pilih Cancel jika tidak bersedia."
+        "Koordinat akan dicatat di sistem monitoring setelah izin diberikan.\n\n" +
+        "Pilih Batal jika tidak ingin membagikan lokasi."
       );
 
       if (!consent) {
@@ -269,6 +276,7 @@
       navigator.geolocation.getCurrentPosition(
 
         function(position) {
+
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
@@ -278,19 +286,26 @@
             location_status: "granted",
             triggered_by: triggeredBy
           });
+
         },
 
         function(error) {
+
           let status = "error";
 
-          if (error.code === 1) status = "permission_denied";
-          if (error.code === 2) status = "position_unavailable";
-          if (error.code === 3) status = "timeout";
+          if (error.code === 1) {
+            status = "permission_denied";
+          } else if (error.code === 2) {
+            status = "position_unavailable";
+          } else if (error.code === 3) {
+            status = "timeout";
+          }
 
           sendEvent("location_denied", {
             location_status: status,
             triggered_by: triggeredBy
           });
+
         },
 
         {
@@ -307,11 +322,13 @@
 
       sendEvent("play_clicked");
 
+      // Video tetap diputar
       video.play().catch(error => {
         console.error("Video playback error:", error);
       });
 
       requestLocation("play");
+
     });
 
     // Tombol Download
@@ -319,8 +336,9 @@
 
       sendEvent("download_clicked");
 
-      // Unduhan tetap berjalan melalui link download.
+      // Browser tetap menjalankan unduhan melalui link.
       requestLocation("download");
+
     });
 
   </script>
