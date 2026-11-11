@@ -7,64 +7,129 @@ const HEADERS = [
   "Activity",
   "Device",
   "OS",
-  "Browser"
+  "Browser",
+  "Latitude",
+  "Longitude",
+  "Maps",
+  "Location Status"
+];
+
+const ALLOWED_ACTIVITIES = [
+  "page_view",
+  "play_clicked",
+  "download_clicked",
+  "location_shared",
+  "location_denied"
 ];
 
 function doPost(e) {
+  const lock = LockService.getScriptLock();
+
   try {
-    const data = JSON.parse(e.postData.contents || "{}");
-
-    const allowed = [
-      "page_view",
-      "play_clicked",
-      "download_clicked"
-    ];
-
-    if (!allowed.includes(data.activity)) {
-      throw new Error("Activity tidak valid");
+    // Validasi request
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error("Request tidak memiliki data POST.");
     }
 
-    if (!data.session_id) {
-      throw new Error("Session ID kosong");
+    const data = JSON.parse(e.postData.contents);
+
+    const activity = String(data.activity || "");
+
+    if (!ALLOWED_ACTIVITIES.includes(activity)) {
+      throw new Error("Activity tidak valid: " + activity);
     }
 
+    // Validasi koordinat jika lokasi dibagikan
+    let latitude = "";
+    let longitude = "";
+    let maps = "";
+
+    if (activity === "location_shared") {
+      if (
+        data.latitude === undefined ||
+        data.latitude === null ||
+        data.latitude === "" ||
+        data.longitude === undefined ||
+        data.longitude === null ||
+        data.longitude === ""
+      ) {
+        throw new Error("Latitude atau longitude tidak tersedia.");
+      }
+
+      latitude = Number(data.latitude);
+      longitude = Number(data.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+        throw new Error("Koordinat tidak valid.");
+      }
+
+      maps = "https://www.google.com/maps?q=" +
+        latitude + "," + longitude;
+    }
+
+    // Ambil spreadsheet
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(SHEET_NAME);
 
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
+    if (!ss) {
+      throw new Error(
+        "Spreadsheet tidak ditemukan. Pastikan Apps Script terikat ke Google Spreadsheet."
+      );
     }
 
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(HEADERS);
-    }
-
-    const lock = LockService.getScriptLock();
     lock.waitLock(10000);
 
     try {
+      let sheet = ss.getSheetByName(SHEET_NAME);
+
+      if (!sheet) {
+        sheet = ss.insertSheet(SHEET_NAME);
+      }
+
+      // Buat header jika sheet masih kosong
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(HEADERS);
+      }
+
+      // Simpan log
       sheet.appendRow([
         new Date(),
-        String(data.session_id).slice(0, 80),
-        data.activity,
+        String(data.session_id || "").slice(0, 80),
+        activity,
         String(data.device || "").slice(0, 40),
         String(data.os || "").slice(0, 40),
-        String(data.browser || "").slice(0, 40)
+        String(data.browser || "").slice(0, 40),
+        latitude,
+        longitude,
+        maps,
+        String(data.location_status || "").slice(0, 100)
       ]);
+
     } finally {
       lock.releaseLock();
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify({status: "success"}))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse({
+      status: "success",
+      activity: activity
+    });
 
-  } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "error",
-        message: String(err.message || err)
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return jsonResponse({
+      status: "error",
+      message: String(error.message || error)
+    });
   }
+}
+
+function jsonResponse(result) {
+  return ContentService
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
