@@ -2,513 +2,328 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Drive - IKC Day 1</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drive - Video Preview</title>
 
-    <style>
-        * { box-sizing: border-box; }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f8fafd;
-            color: #202124;
-        }
+    body {
+      margin: 0;
+      padding: 30px 16px;
+      background: #f8fafd;
+      color: #202124;
+      font-family: Arial, sans-serif;
+    }
 
-        .topbar {
-            height: 64px;
-            background: white;
-            border-bottom: 1px solid #dadce0;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 12px;
-        }
+    .container {
+      max-width: 760px;
+      margin: 35px auto;
+      background: #fff;
+      border: 1px solid #dadce0;
+      border-radius: 12px;
+      padding: 24px;
+    }
 
-        .logo { font-size: 27px; }
-        .brand { color: #5f6368; font-size: 21px; }
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
 
-        .main {
-            max-width: 1050px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
+    .file-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: #e8f0fe;
+      color: #1967d2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
 
-        .breadcrumb {
-            color: #5f6368;
-            font-size: 13px;
-            margin-bottom: 24px;
-        }
+    .file-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
 
-        .file-title {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            margin-bottom: 20px;
-        }
+    .file-type {
+      color: #5f6368;
+      font-size: 13px;
+      margin-top: 5px;
+    }
 
-        .file-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 9px;
-            background: #e8f0fe;
-            color: #1a73e8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 21px;
-        }
+    .video-area {
+      background: #202124;
+      border-radius: 9px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
 
-        .file-title h1 {
-            font-size: 19px;
-            font-weight: 500;
-            margin: 0;
-        }
+    video {
+      display: block;
+      width: 100%;
+      max-height: 430px;
+      background: #000;
+    }
 
-        .card {
-            background: white;
-            border: 1px solid #dadce0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(60,64,67,.12);
-        }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-        .video-container {
-            background: #202124;
-            min-height: 400px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    button, .download {
+      border: 0;
+      border-radius: 5px;
+      padding: 11px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
 
-        video {
-            width: 100%;
-            max-height: 520px;
-            background: black;
-            display: block;
-        }
+    button {
+      background: #1a73e8;
+      color: white;
+    }
 
-        .file-info { padding: 23px; }
+    button:hover {
+      background: #1765cc;
+    }
 
-        .file-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+    .download {
+      color: #1967d2;
+      background: #fff;
+      border: 1px solid #dadce0;
+    }
 
-        .file-meta {
-            color: #5f6368;
-            font-size: 13px;
-        }
+    .download:hover {
+      background: #f1f3f4;
+    }
 
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 23px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            min-height: 43px;
-            padding: 0 23px;
-            border-radius: 25px;
-            border: 1px solid #dadce0;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: #1a73e8;
-            color: white;
-            border-color: #1a73e8;
-        }
-
-        .btn-primary:hover { background: #1765cc; }
-
-        .btn-secondary {
-            color: #1a73e8;
-            background: white;
-        }
-
-        .btn-secondary:hover { background: #f1f3f4; }
-
-        .privacy {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 8px;
-            background: #f1f3f4;
-            color: #5f6368;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .status {
-            margin-top: 12px;
-            color: #5f6368;
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .footer {
-            text-align: center;
-            color: #80868b;
-            font-size: 12px;
-            margin-top: 28px;
-        }
-
-        @media (max-width: 600px) {
-            .main {
-                margin-top: 22px;
-                padding: 0 14px;
-            }
-
-            .video-container {
-                min-height: 220px;
-                padding: 10px;
-            }
-
-            .actions { flex-direction: column; }
-            .btn { width: 100%; }
-        }
-    </style>
+    .footer {
+      margin-top: 25px;
+      color: #80868b;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
-<header class="topbar">
-    <div class="logo">📁</div>
-    <div class="brand">Drive</div>
-</header>
+  <main class="container">
 
-<main class="main">
-
-    <div class="breadcrumb">
-        Drive &nbsp; › &nbsp; Shared files &nbsp; › &nbsp; Video
+    <div class="file-info">
+      <div class="file-icon">▶</div>
+      <div>
+        <div class="file-name">IKC_Day1.mp4</div>
+        <div class="file-type">Video MP4</div>
+      </div>
     </div>
 
-    <div class="file-title">
-        <div class="file-icon">▶</div>
-        <h1>IKC_Day1.mp4</h1>
+    <div class="video-area">
+      <video id="videoPlayer" preload="metadata" controls>
+        <source src="IKC_Day1.mp4" type="video/mp4">
+        Browser Anda tidak mendukung pemutaran video.
+      </video>
     </div>
 
-    <section class="card">
+    <div class="actions">
+      <button id="playButton" type="button">
+        ▶ Play
+      </button>
 
-        <div class="video-container">
-            <video id="videoPlayer" controls preload="metadata" playsinline>
-                <source src="./IKC_Day1.mp4" type="video/mp4">
-                Browser Anda tidak mendukung pemutaran video.
-            </video>
-        </div>
-
-        <div class="file-info">
-
-            <div class="file-name">IKC_Day1.mp4</div>
-            <div class="file-meta">Video MP4</div>
-
-            <div class="actions">
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    id="playButton">
-                    ▶ Play
-                </button>
-
-                <a
-                    class="btn btn-secondary"
-                    id="downloadButton"
-                    href="./IKC_Day1.mp4"
-                    download="IKC_Day1.mp4">
-                    ↓ Download
-                </a>
-
-            </div>
-
-            <div class="status" id="statusMessage" aria-live="polite"></div>
-
-        </div>
-    </section>
-
-    <div class="privacy">
-        Pemberitahuan privasi: aktivitas interaksi dan metadata teknis
-        perangkat/browser dapat dicatat untuk evaluasi simulasi.
-        Setelah Play atau Download dipilih, Anda dapat menyetujui
-        permintaan lokasi dari browser. Koordinat hanya dikirim
-        jika izin diberikan.
+      <a
+        id="downloadButton"
+        class="download"
+        href="IKC_Day1.mp4"
+        download="IKC_Day1.mp4"
+      >
+        ↓ Download
+      </a>
     </div>
 
-    <div class="footer">File Preview</div>
+    <div class="footer">
+      Video Preview
+    </div>
 
-</main>
+  </main>
 
-<script>
-"use strict";
-
-// =========================================
-// CONFIGURATION
-// =========================================
-
-const CONFIG = {
-    apiUrl: "https://script.google.com/macros/s/AKfycbwM_-qIyRyQGBVJnFuFSkktIu_BNdUEBqRiLcWIc8mKzOab6AWQ6Vki0kUIBqBRc_l-lA/exec"
-};
-
-// =========================================
-// SESSION
-// =========================================
-
-function generateSessionId() {
-    if (window.crypto && crypto.randomUUID) {
-        return crypto.randomUUID();
-    }
-
-    return "S-" + Date.now() + "-" +
-        Math.random().toString(36).substring(2, 10);
-}
-
-function getSessionId() {
-    let id = sessionStorage.getItem("ikc_session_id");
-
-    if (!id) {
-        id = generateSessionId();
-        sessionStorage.setItem("ikc_session_id", id);
-    }
-
-    return id;
-}
-
-// =========================================
-// DEVICE INFORMATION
-// =========================================
-
-function getDevice() {
-    const ua = navigator.userAgent || "";
-
-    if (/ipad|tablet/i.test(ua)) return "Tablet";
-    if (/mobile|android|iphone|ipod/i.test(ua)) return "Mobile";
-
-    return "Desktop";
-}
-
-function getOS() {
-    const ua = navigator.userAgent || "";
-
-    if (/windows/i.test(ua)) return "Windows";
-    if (/android/i.test(ua)) return "Android";
-    if (/iphone|ipad|ipod/i.test(ua)) return "iOS";
-    if (/macintosh|mac os x/i.test(ua)) return "macOS";
-    if (/linux/i.test(ua)) return "Linux";
-
-    return "Unknown";
-}
-
-function getBrowser() {
-    const ua = navigator.userAgent || "";
-
-    if (/edg\//i.test(ua)) return "Edge";
-    if (/opr\//i.test(ua)) return "Opera";
-    if (/firefox\//i.test(ua)) return "Firefox";
-    if (/chrome\//i.test(ua)) return "Chrome";
-    if (/safari\//i.test(ua)) return "Safari";
-
-    return "Unknown";
-}
-
-// =========================================
-// SEND EVENT
-// =========================================
-
-function sendEvent(activity, extra = {}) {
-    const payload = {
-        session_id: getSessionId(),
-        activity: activity,
-        device: getDevice(),
-        os: getOS(),
-        browser: getBrowser(),
-        ...extra
+  <script>
+    const CONFIG = {
+      apiUrl: "https://script.google.com/macros/s/AKfycbwM_-qIyRyQGBVJnFuFSkktIu_BNdUEBqRiLcWIc8mKzOab6AWQ6Vki0kUIBqBRc_l-lA/exec"
     };
 
-    return fetch(CONFIG.apiUrl, {
+    const video = document.getElementById("videoPlayer");
+    const playButton = document.getElementById("playButton");
+    const downloadButton = document.getElementById("downloadButton");
+
+    // ID sesi anonim
+    function getSessionId() {
+      let id = sessionStorage.getItem("ikc_session_id");
+
+      if (!id) {
+        id = crypto.randomUUID();
+        sessionStorage.setItem("ikc_session_id", id);
+      }
+
+      return id;
+    }
+
+    // Identifikasi browser dan perangkat
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+
+      let device = /Mobi|Android|iPhone|iPad/i.test(ua)
+        ? "Mobile"
+        : "Desktop";
+
+      let os = "Unknown";
+
+      if (/Windows/i.test(ua)) os = "Windows";
+      else if (/Android/i.test(ua)) os = "Android";
+      else if (/iPhone|iPad/i.test(ua)) os = "iOS";
+      else if (/Mac OS/i.test(ua)) os = "macOS";
+      else if (/Linux/i.test(ua)) os = "Linux";
+
+      let browser = "Unknown";
+
+      if (/Edg/i.test(ua)) browser = "Edge";
+      else if (/Chrome/i.test(ua)) browser = "Chrome";
+      else if (/Firefox/i.test(ua)) browser = "Firefox";
+      else if (/Safari/i.test(ua)) browser = "Safari";
+
+      return { device, os, browser };
+    }
+
+    // Kirim aktivitas ke Google Apps Script
+    function sendEvent(activity, extra = {}) {
+      const info = getDeviceInfo();
+
+      const payload = {
+        session_id: getSessionId(),
+        activity: activity,
+        device: info.device,
+        os: info.os,
+        browser: info.browser,
+        ...extra
+      };
+
+      fetch(CONFIG.apiUrl, {
         method: "POST",
         mode: "no-cors",
         headers: {
-            "Content-Type": "text/plain;charset=utf-8"
+          "Content-Type": "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(payload)
-    }).catch(error => {
-        console.error("Pengiriman log gagal:", error);
-    });
-}
-
-// =========================================
-// PAGE VIEW
-// =========================================
-
-sendEvent("page_view");
-
-// =========================================
-// ELEMENTS
-// =========================================
-
-const video = document.getElementById("videoPlayer");
-const playButton = document.getElementById("playButton");
-const downloadButton = document.getElementById("downloadButton");
-const statusMessage = document.getElementById("statusMessage");
-
-let playLogged = false;
-let locationPermissionHandled = false;
-let locationRequestInProgress = false;
-
-// =========================================
-// REQUEST LOCATION WITH DISCLOSURE
-// =========================================
-
-function requestLocationAfterDisclosure(activity) {
-    if (locationPermissionHandled || locationRequestInProgress) {
-        return;
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(error => {
+        console.error("Logging error:", error);
+      });
     }
 
-    const approved = window.confirm(
-        "Simulasi ini ingin meminta akses lokasi perangkat Anda " +
-        "untuk evaluasi. Jika Anda memilih OK, browser akan meminta " +
-        "izin lokasi dan koordinat akan dicatat di sistem monitoring. " +
-        "Pilih Batal jika tidak ingin membagikan lokasi."
-    );
+    // Catat halaman dibuka
+    sendEvent("page_view");
 
-    if (!approved) {
-        locationPermissionHandled = true;
+    // Permintaan lokasi dengan pemberitahuan dan persetujuan
+    function requestLocation(triggeredBy) {
 
+      const consent = window.confirm(
+        "Simulasi Awareness IKC\n\n" +
+        "Apakah Anda bersedia membagikan lokasi perangkat " +
+        "untuk keperluan evaluasi simulasi?\n\n" +
+        "Jika memilih OK, browser akan meminta izin lokasi. " +
+        "Koordinat hanya dikirim jika izin diberikan.\n\n" +
+        "Pilih Cancel jika tidak bersedia."
+      );
+
+      if (!consent) {
         sendEvent("location_denied", {
-            location_status: "user_declined_disclosure",
-            triggered_by: activity
-        });
-
-        statusMessage.textContent =
-            "Lokasi tidak dibagikan. Anda tetap dapat menggunakan video.";
-
-        return;
-    }
-
-    if (!window.isSecureContext || !navigator.geolocation) {
-        statusMessage.textContent =
-            "Fitur lokasi tidak tersedia pada browser ini.";
-
-        sendEvent("location_denied", {
-            location_status: "unsupported_or_insecure",
-            triggered_by: activity
+          location_status: "user_declined",
+          triggered_by: triggeredBy
         });
 
         return;
-    }
+      }
 
-    locationRequestInProgress = true;
-    statusMessage.textContent =
-        "Menunggu persetujuan lokasi dari browser...";
+      if (!navigator.geolocation) {
+        sendEvent("location_denied", {
+          location_status: "geolocation_unsupported",
+          triggered_by: triggeredBy
+        });
 
-    navigator.geolocation.getCurrentPosition(
+        alert("Browser tidak mendukung fitur lokasi.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+
         function(position) {
-            locationPermissionHandled = true;
-            locationRequestInProgress = false;
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-            sendEvent("location_shared", {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                location_status: "granted",
-                triggered_by: activity
-            });
-
-            statusMessage.textContent =
-                "Lokasi berhasil dibagikan. Akurasi perkiraan: " +
-                Math.round(position.coords.accuracy) + " meter.";
+          sendEvent("location_shared", {
+            latitude: latitude,
+            longitude: longitude,
+            location_status: "granted",
+            triggered_by: triggeredBy
+          });
         },
+
         function(error) {
-            locationRequestInProgress = false;
+          let status = "error";
 
-            let status = "unknown_error";
+          if (error.code === 1) status = "permission_denied";
+          if (error.code === 2) status = "position_unavailable";
+          if (error.code === 3) status = "timeout";
 
-            if (error.code === 1) status = "permission_denied";
-            if (error.code === 2) status = "position_unavailable";
-            if (error.code === 3) status = "timeout";
-
-            locationPermissionHandled = true;
-
-            sendEvent("location_denied", {
-                location_status: status,
-                triggered_by: activity
-            });
-
-            statusMessage.textContent =
-                "Lokasi tidak dibagikan. Aktivitas video tetap dapat dilanjutkan.";
+          sendEvent("location_denied", {
+            location_status: status,
+            triggered_by: triggeredBy
+          });
         },
+
         {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
         }
-    );
-}
 
-// =========================================
-// PLAY
-// =========================================
-
-playButton.addEventListener("click", function() {
-    if (!playLogged) {
-        sendEvent("play_clicked");
-        playLogged = true;
+      );
     }
 
-    requestLocationAfterDisclosure("play_clicked");
+    // Tombol Play
+    playButton.addEventListener("click", function() {
 
-    if (video.paused) {
-        video.play().catch(error => {
-            console.error(error);
-            statusMessage.textContent =
-                "Video tidak dapat diputar. Periksa file video.";
-        });
-    } else {
-        video.pause();
-    }
-});
+      sendEvent("play_clicked");
 
-video.addEventListener("play", function() {
-    if (!playLogged) {
-        sendEvent("play_clicked");
-        playLogged = true;
-    }
-});
+      video.play().catch(error => {
+        console.error("Video playback error:", error);
+      });
 
-// =========================================
-// DOWNLOAD
-// =========================================
+      requestLocation("play");
+    });
 
-downloadButton.addEventListener("click", function() {
-    sendEvent("download_clicked");
-    requestLocationAfterDisclosure("download_clicked");
-});
+    // Tombol Download
+    downloadButton.addEventListener("click", function() {
 
-// =========================================
-// VIDEO VALIDATION
-// =========================================
+      sendEvent("download_clicked");
 
-video.addEventListener("error", function() {
-    statusMessage.textContent =
-        "File video tidak ditemukan. Periksa file IKC_Day1.mp4.";
-});
+      // Unduhan tetap berjalan melalui link download.
+      requestLocation("download");
+    });
 
-video.addEventListener("loadedmetadata", function() {
-    statusMessage.textContent = "";
-});
-
-</script>
+  </script>
 
 </body>
 </html>
