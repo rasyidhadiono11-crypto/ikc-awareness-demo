@@ -7,11 +7,7 @@ const HEADERS = [
   "Activity",
   "Device",
   "OS",
-  "Browser",
-  "Latitude",
-  "Longitude",
-  "Maps",
-  "Location Status"
+  "Browser"
 ];
 
 function doPost(e) {
@@ -21,12 +17,15 @@ function doPost(e) {
     const allowed = [
       "page_view",
       "play_clicked",
-      "location_shared",
-      "location_denied"
+      "download_clicked"
     ];
 
     if (!allowed.includes(data.activity)) {
       throw new Error("Activity tidak valid");
+    }
+
+    if (!data.session_id) {
+      throw new Error("Session ID kosong");
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -44,61 +43,27 @@ function doPost(e) {
     lock.waitLock(10000);
 
     try {
-      const latitude = data.activity === "location_shared"
-        ? Number(data.latitude)
-        : "";
-
-      const longitude = data.activity === "location_shared"
-        ? Number(data.longitude)
-        : "";
-
-      if (
-        data.activity === "location_shared" &&
-        (
-          !Number.isFinite(latitude) ||
-          !Number.isFinite(longitude) ||
-          latitude < -90 ||
-          latitude > 90 ||
-          longitude < -180 ||
-          longitude > 180
-        )
-      ) {
-        throw new Error("Koordinat tidak valid");
-      }
-
-      const maps = data.activity === "location_shared"
-        ? "https://www.google.com/maps?q=" +
-          latitude + "," + longitude
-        : "";
-
       sheet.appendRow([
         new Date(),
-        String(data.session_id || "").slice(0, 80),
+        String(data.session_id).slice(0, 80),
         data.activity,
         String(data.device || "").slice(0, 40),
         String(data.os || "").slice(0, 40),
-        String(data.browser || "").slice(0, 40),
-        latitude,
-        longitude,
-        maps,
-        String(data.location_status || "").slice(0, 100)
+        String(data.browser || "").slice(0, 40)
       ]);
-
     } finally {
       lock.releaseLock();
     }
 
     return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "success"
-      }))
+      .createTextOutput(JSON.stringify({status: "success"}))
       .setMimeType(ContentService.MimeType.JSON);
 
-  } catch (error) {
+  } catch (err) {
     return ContentService
       .createTextOutput(JSON.stringify({
         status: "error",
-        message: String(error.message || error)
+        message: String(err.message || err)
       }))
       .setMimeType(ContentService.MimeType.JSON);
   }
