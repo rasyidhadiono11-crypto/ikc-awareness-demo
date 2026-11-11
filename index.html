@@ -1,53 +1,501 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IKC_Day1.mp4 — Video Preview (Simulasi)</title>
-<style>
-:root{--blue:#1a73e8;--ink:#202124;--muted:#5f6368;--line:#dadce0;--bg:#f8fafd}
-*{box-sizing:border-box}body{margin:0;font:14px Arial,sans-serif;color:var(--ink);background:var(--bg)}
-.top{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;gap:14px}
-.logo{font-size:21px;color:#4285f4;font-weight:600}.logo span{color:#5f6368;font-weight:400}
-.search{margin-left:30px;background:#f1f3f4;border-radius:24px;padding:13px 18px;width:min(560px,55vw);color:#5f6368}
-main{max-width:1050px;margin:34px auto;padding:0 22px}
-.crumb{color:var(--muted);margin-bottom:18px}.filehead{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.fileicon{width:38px;height:44px;border-radius:5px;background:#e8f0fe;color:#1967d2;display:grid;place-items:center;font-weight:bold}
-h1{font-size:20px;font-weight:500;margin:0 0 5px}.sub{font-size:12px;color:var(--muted)}
-.panel{background:#202124;border-radius:12px;min-height:430px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.video{width:min(720px,90%);aspect-ratio:16/9;background:linear-gradient(135deg,#30343a,#17191d);display:flex;align-items:center;justify-content:center;color:#fff;position:relative}
-.play{width:70px;height:70px;border-radius:50%;background:#fff;color:#202124;display:grid;place-items:center;font-size:27px;padding-left:5px;box-shadow:0 2px 12px #0008}
-.filename{position:absolute;left:18px;bottom:16px;color:#ddd;font-size:13px}
-.notice{margin:18px 0;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;line-height:1.5}
-button{border:0;border-radius:22px;background:var(--blue);color:#fff;padding:11px 20px;font-weight:600;cursor:pointer}
-button:hover{background:#1558b0}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
-.small{color:var(--muted);font-size:12px}
-#reveal{display:none;margin-top:18px;border:1px solid #f9ab00;background:#fef7e0;padding:18px;border-radius:10px;line-height:1.55}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IKC Day 1 - Video Preview Simulation</title>
+
+  <style>
+    :root {
+      --blue: #1a73e8;
+      --blue-dark: #1558b0;
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #dadce0;
+      --bg: #f8fafd;
+      --green: #188038;
+      --red: #d93025;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    .topbar {
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      gap: 12px;
+    }
+
+    .drive-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: var(--blue);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: bold;
+    }
+
+    .brand {
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 36px auto;
+      padding: 0 20px;
+    }
+
+    .breadcrumb {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .file-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .file-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #e8f0fe;
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-size: 23px;
+    }
+
+    h1 {
+      font-size: 21px;
+      margin: 0 0 5px;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .preview {
+      background: #202124;
+      border-radius: 12px;
+      min-height: 350px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    .video-content {
+      max-width: 440px;
+    }
+
+    .video-symbol {
+      font-size: 65px;
+      margin-bottom: 15px;
+    }
+
+    .video-content h2 {
+      font-size: 22px;
+      margin: 0 0 10px;
+    }
+
+    .video-content p {
+      color: #dadce0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .play-button {
+      margin-top: 15px;
+      border: 0;
+      border-radius: 24px;
+      background: white;
+      color: #202124;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .play-button:hover {
+      background: #e8eaed;
+    }
+
+    .info-panel {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px;
+      margin-top: 22px;
+    }
+
+    .info-panel h2 {
+      font-size: 17px;
+      margin: 0 0 12px;
+    }
+
+    .info-panel p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .location-button {
+      display: inline-block;
+      border: 0;
+      border-radius: 24px;
+      padding: 12px 20px;
+      background: var(--blue);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .location-button:hover {
+      background: var(--blue-dark);
+    }
+
+    .location-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .map-result {
+      display: none;
+      margin-top: 20px;
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
+    }
+
+    .map-result h3 {
+      font-size: 16px;
+      margin: 0 0 12px;
+    }
+
+    .coordinate {
+      background: #f1f3f4;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    .map-link {
+      display: inline-block;
+      margin-top: 14px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .map-link:hover {
+      text-decoration: underline;
+    }
+
+    .map-frame {
+      width: 100%;
+      height: 320px;
+      border: 0;
+      border-radius: 10px;
+      margin-top: 16px;
+      background: #f1f3f4;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .success {
+      color: var(--green);
+    }
+
+    .error {
+      color: var(--red);
+    }
+
+    .simulation-notice {
+      display: none;
+      background: #e8f0fe;
+      border: 1px solid #c6dafc;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 30px 15px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin-top: 22px;
+      }
+
+      .preview {
+        min-height: 280px;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .map-frame {
+        height: 260px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header class="top"><div class="logo">Drive <span>preview</span></div><div class="search">Search in Drive</div></header>
-<main>
-  <div class="crumb">My Drive　›　Shared files　›　Video</div>
-  <div class="filehead"><div class="fileicon">▶</div><div><h1>IKC_Day1.mp4</h1><div class="sub">Video file · Simulasi awareness internal</div></div></div>
-  <section class="panel"><div class="video"><div class="play">▶</div><div class="filename">IKC_Day1.mp4</div></div></section>
-  <div class="notice"><strong>Video preview</strong><br>File video siap dipratinjau. Klik tombol di bawah untuk melanjutkan simulasi.</div>
-  <div class="actions"><button id="openBtn">Open video</button><span class="small">Demo lokal — tidak terhubung ke Google Drive.</span></div>
-  <section id="reveal"><strong>Ini adalah simulasi phishing awareness.</strong><br>
-  Anda baru saja membuka halaman tiruan yang meniru pola tampilan pratinjau file. Dalam simulasi ini tidak ada kata sandi, OTP, cookie, atau data pribadi yang diminta maupun dikirim. Saat menerima tautan file, periksa domain, pengirim, konteks, dan tujuan tautan sebelum melanjutkan.</section>
-</main>
-<script>
-const btn=document.getElementById('openBtn');
-btn.addEventListener('click',()=>{
-  try {
-    const key='ikc_day1_simulation_events';
-    const events=JSON.parse(localStorage.getItem(key)||'[]');
-    events.push({event:'open_video_clicked',file:'IKC_Day1.mp4',time:new Date().toISOString()});
-    localStorage.setItem(key,JSON.stringify(events));
-  } catch(e) {}
-  document.getElementById('reveal').style.display='block';
-  btn.textContent='Simulation completed';
-  btn.disabled=true;
-});
-</script>
-</body></html>
+
+  <header class="topbar">
+    <div class="drive-logo">D</div>
+    <div class="brand">Drive Preview</div>
+  </header>
+
+  <main class="container">
+
+    <div class="breadcrumb">
+      My Drive &nbsp;›&nbsp; IKC Awareness &nbsp;›&nbsp; Video
+    </div>
+
+    <div class="file-header">
+      <div class="file-icon">▶</div>
+      <div>
+        <h1>IKC_Day1.mp4</h1>
+        <div class="subtitle">Video file · Simulation preview</div>
+      </div>
+    </div>
+
+    <section class="preview">
+      <div class="video-content">
+        <div class="video-symbol">▶</div>
+        <h2>IKC Day 1</h2>
+        <p>
+          Video preview simulation.
+          Klik tombol di bawah untuk melanjutkan simulasi.
+        </p>
+        <button class="play-button" id="openVideo">
+          Open video
+        </button>
+      </div>
+    </section>
+
+    <section class="info-panel">
+      <h2>Informasi Lokasi</h2>
+
+      <p>
+        Jika Anda ingin melihat lokasi perangkat Anda pada Google Maps,
+        tekan tombol di bawah. Browser akan meminta izin akses lokasi.
+      </p>
+
+      <p>
+        Lokasi hanya diproses setelah Anda memberikan izin.
+        Koordinat tidak dikirim ke pemilik halaman melalui fitur ini.
+      </p>
+
+      <button class="location-button" id="getLocation">
+        Bagikan lokasi &amp; lihat di Maps
+      </button>
+
+      <div id="locationStatus" class="status" aria-live="polite">
+        Lokasi belum diminta.
+      </div>
+
+      <div id="mapResult" class="map-result">
+        <h3>Informasi lokasi perangkat</h3>
+
+        <div class="coordinate">
+          <div><strong>Latitude:</strong> <span id="latitude">-</span></div>
+          <div><strong>Longitude:</strong> <span id="longitude">-</span></div>
+          <div><strong>Akurasi:</strong> <span id="accuracy">-</span></div>
+        </div>
+
+        <a
+          id="googleMapsLink"
+          class="map-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Buka lokasi di Google Maps ↗
+        </a>
+
+        <iframe
+          id="mapFrame"
+          class="map-frame"
+          title="Peta lokasi"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          hidden
+        ></iframe>
+      </div>
+    </section>
+
+    <div class="simulation-notice" id="simulationNotice">
+      <strong>Simulasi Awareness</strong><br>
+      Ini merupakan halaman simulasi edukasi keamanan informasi,
+      bukan layanan Google Drive yang sebenarnya.
+      Jangan pernah memasukkan password, OTP, atau informasi rahasia
+      pada halaman yang tidak dapat diverifikasi.
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    IKC Awareness Simulation · Internal Educational Demo
+  </footer>
+
+  <script>
+    const openVideoButton = document.getElementById("openVideo");
+    const locationButton = document.getElementById("getLocation");
+    const locationStatus = document.getElementById("locationStatus");
+    const mapResult = document.getElementById("mapResult");
+
+    // Event simulasi video disimpan hanya di browser pengunjung.
+    openVideoButton.addEventListener("click", function () {
+      const eventData = {
+        event: "open_video_clicked",
+        file: "IKC_Day1.mp4",
+        time: new Date().toISOString()
+      };
+
+      try {
+        const storageKey = "ikc_day1_simulation_events";
+        const previousEvents =
+          JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+        previousEvents.push(eventData);
+        localStorage.setItem(storageKey, JSON.stringify(previousEvents));
+      } catch (error) {
+        console.warn("Event lokal tidak dapat disimpan.", error);
+      }
+
+      document.getElementById("simulationNotice").style.display = "block";
+    });
+
+    // Lokasi hanya diminta setelah pengunjung menekan tombol ini.
+    locationButton.addEventListener("click", function () {
+      if (!navigator.geolocation) {
+        locationStatus.textContent =
+          "Browser ini tidak mendukung fitur geolocation.";
+        locationStatus.className = "status error";
+        return;
+      }
+
+      locationButton.disabled = true;
+      locationButton.textContent = "Meminta izin lokasi...";
+      locationStatus.textContent =
+        "Silakan berikan izin lokasi melalui notifikasi browser.";
+      locationStatus.className = "status";
+
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+
+          const coordinates =
+            latitude + "," + longitude;
+
+          const mapsUrl =
+            "https://www.google.com/maps?q=" +
+            encodeURIComponent(coordinates);
+
+          document.getElementById("latitude").textContent =
+            latitude.toFixed(6);
+
+          document.getElementById("longitude").textContent =
+            longitude.toFixed(6);
+
+          document.getElementById("accuracy").textContent =
+            Math.round(accuracy) + " meter";
+
+          const mapsLink = document.getElementById("googleMapsLink");
+          mapsLink.href = mapsUrl;
+
+          const mapFrame = document.getElementById("mapFrame");
+          mapFrame.src =
+            "https://maps.google.com/maps?q=" +
+            encodeURIComponent(coordinates) +
+            "&z=16&output=embed";
+
+          mapFrame.hidden = false;
+          mapResult.style.display = "block";
+
+          locationStatus.textContent =
+            "Lokasi berhasil diperoleh dari perangkat Anda.";
+          locationStatus.className = "status success";
+
+          locationButton.disabled = false;
+          locationButton.textContent = "Perbarui lokasi";
+        },
+
+        function (error) {
+          let message = "Lokasi tidak berhasil diperoleh.";
+
+          if (error.code === error.PERMISSION_DENIED) {
+            message =
+              "Izin lokasi ditolak. Anda dapat mengubah izin lokasi melalui pengaturan browser.";
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            message = "Informasi lokasi tidak tersedia.";
+          } else if (error.code === error.TIMEOUT) {
+            message = "Permintaan lokasi melewati batas waktu.";
+          }
+
+          locationStatus.textContent = message;
+          locationStatus.className = "status error";
+
+          locationButton.disabled = false;
+          locationButton.textContent = "Coba lagi";
+        },
+
+        {
+          enableHighAccuracy: false,
+          timeout: 15000,
+          maximumAge: 60000
+        }
+      );
+    });
+  </script>
+
+</body>
+</html>
