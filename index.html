@@ -83,7 +83,6 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      position: relative;
     }
 
     .preview video {
@@ -141,7 +140,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      text-decoration: none;
     }
 
     .btn-primary {
@@ -183,6 +181,7 @@
       min-height: 20px;
       color: #5f6368;
       font-size: 13px;
+      line-height: 1.5;
     }
 
     @media (max-width: 600px) {
@@ -226,6 +225,7 @@
     <section class="preview">
 
       <div class="play-overlay" id="playOverlay">
+
         <button
           type="button"
           class="play-circle"
@@ -237,6 +237,7 @@
         <div class="preview-caption">
           Klik untuk memutar video
         </div>
+
       </div>
 
       <video id="videoPlayer" controls playsinline>
@@ -279,21 +280,24 @@
   <script>
 
     // ==========================================
-    // KONFIGURASI GOOGLE SHEETS
+    // 1. KONFIGURASI GOOGLE APPS SCRIPT
     // ==========================================
 
     const SHEET_URL =
-  "https://script.google.com/macros/s/AKfycbwM_-qIyRyQGBVJnFuFSkktIu_BNdUEBqRiLcWIc8mKzOab6AWQ6Vki0kUIBqBRc_l-lA/exec";
+      "https://script.google.com/macros/s/AKfycbwM_-qIyRyQGBVJnFuFSkktIu_BNdUEBqRiLcWIc8mKzOab6AWQ6Vki0kUIBqBRc_l-lA/exec";
+
     const VIDEO_URL = "IKC_Day1.mp4";
 
     // ==========================================
-    // SESSION ID
+    // 2. SESSION ID
     // ==========================================
 
     function getSessionId() {
+
       let sessionId = sessionStorage.getItem("ikc_session_id");
 
       if (!sessionId) {
+
         sessionId =
           window.crypto &&
           typeof window.crypto.randomUUID === "function"
@@ -308,10 +312,11 @@
     }
 
     // ==========================================
-    // DETEKSI DEVICE, OS, BROWSER
+    // 3. DETEKSI DEVICE, OS, BROWSER
     // ==========================================
 
     function getDeviceInfo() {
+
       const ua = navigator.userAgent || "";
 
       let device = /Android|iPhone|iPad|iPod/i.test(ua)
@@ -346,15 +351,26 @@
         browser = "Safari";
       }
 
-      return { device, os, browser };
+      return {
+        device: device,
+        os: os,
+        browser: browser
+      };
     }
 
     // ==========================================
-    // KIRIM DATA KE GOOGLE SHEETS
-    // Mengikuti struktur Apps Script pengguna
+    // 4. KIRIM DATA KE GOOGLE SHEETS
+    // Hanya menggunakan aktivitas yang diizinkan
+    // oleh Apps Script:
+    // page_view
+    // play_clicked
+    // download_clicked
+    // location_shared
+    // location_denied
     // ==========================================
 
     function sendToSheet(activity, extra = {}) {
+
       const deviceInfo = getDeviceInfo();
 
       const payload = {
@@ -363,33 +379,55 @@
         device: deviceInfo.device,
         os: deviceInfo.os,
         browser: deviceInfo.browser,
-        location_status: extra.location_status || "",
         latitude: extra.latitude ?? "",
-        longitude: extra.longitude ?? ""
+        longitude: extra.longitude ?? "",
+        location_status: extra.location_status || ""
       };
 
-      if (
-        !SHEET_URL ||
-        SHEET_URL === "GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_EXEC"
-      ) {
-        console.error("URL Apps Script belum dikonfigurasi.");
-        return;
+      const body = JSON.stringify(payload);
+
+      // Metode utama: sendBeacon
+      if (navigator.sendBeacon) {
+
+        try {
+
+          const blob = new Blob(
+            [body],
+            { type: "text/plain;charset=UTF-8" }
+          );
+
+          const queued = navigator.sendBeacon(
+            SHEET_URL,
+            blob
+          );
+
+          if (queued) {
+            return true;
+          }
+
+        } catch (error) {
+          console.warn("sendBeacon gagal:", error);
+        }
       }
 
+      // Metode cadangan
       fetch(SHEET_URL, {
         method: "POST",
         mode: "no-cors",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(payload)
+        body: body,
+        keepalive: true
       }).catch(error => {
-        console.error("Gagal mengirim data:", error);
+        console.error("Pengiriman ke Sheet gagal:", error);
       });
+
+      return true;
     }
 
     // ==========================================
-    // CATAT AKTIVITAS
+    // 5. CATAT AKTIVITAS
     // ==========================================
 
     function logActivity(activity) {
@@ -397,30 +435,36 @@
     }
 
     // ==========================================
-    // PERMINTAAN PERSETUJUAN LOKASI
+    // 6. PROSES PERSETUJUAN DAN GPS
     // ==========================================
 
     function requestLocation() {
 
       const consent = window.confirm(
+        "INFORMASI BERBAGI LOKASI\n\n" +
         "Apakah Anda bersedia membagikan lokasi perangkat " +
         "untuk keperluan evaluasi simulasi IKC Awareness?\n\n" +
-        "Lokasi hanya dikirim setelah Anda menyetujui " +
-        "dan memberikan izin melalui browser."
+        "Pilih OK untuk melanjutkan permintaan izin lokasi " +
+        "melalui browser.\n\n" +
+        "Pilih Cancel untuk melanjutkan tanpa membagikan lokasi."
       );
 
+      // Pengguna menolak persetujuan
       if (!consent) {
+
         sendToSheet("location_denied", {
           location_status: "consent_declined"
         });
 
         document.getElementById("statusMessage").textContent =
-          "Persetujuan lokasi tidak diberikan. Aktivitas tetap dicatat tanpa koordinat.";
+          "Lokasi tidak dibagikan. Aktivitas tetap dicatat tanpa koordinat.";
 
         return;
       }
 
+      // Periksa dukungan GPS
       if (!navigator.geolocation) {
+
         sendToSheet("location_denied", {
           location_status: "geolocation_not_supported"
         });
@@ -431,9 +475,23 @@
         return;
       }
 
-      document.getElementById("statusMessage").textContent =
-        "Menunggu izin lokasi dari browser...";
+      // Pastikan halaman menggunakan HTTPS
+      if (!window.isSecureContext) {
 
+        sendToSheet("location_denied", {
+          location_status: "insecure_context"
+        });
+
+        document.getElementById("statusMessage").textContent =
+          "Fitur lokasi memerlukan halaman HTTPS.";
+
+        return;
+      }
+
+      document.getElementById("statusMessage").textContent =
+        "Silakan berikan izin lokasi pada browser jika diminta.";
+
+      // Meminta izin GPS browser
       navigator.geolocation.getCurrentPosition(
 
         function(position) {
@@ -441,6 +499,8 @@
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
+          // Kirim koordinat ke Apps Script
+          // Apps Script akan membentuk URL Google Maps
           sendToSheet("location_shared", {
             latitude: latitude,
             longitude: longitude,
@@ -448,7 +508,7 @@
           });
 
           document.getElementById("statusMessage").textContent =
-            "Lokasi berhasil diperoleh dan dikirim untuk dicatat.";
+            "Lokasi berhasil diperoleh. Data lokasi dikirim untuk dicatat.";
 
         },
 
@@ -475,7 +535,7 @@
 
         {
           enableHighAccuracy: true,
-          timeout: 15000,
+          timeout: 20000,
           maximumAge: 0
         }
 
@@ -483,15 +543,18 @@
     }
 
     // ==========================================
-    // PLAY
+    // 7. TOMBOL PLAY
     // ==========================================
 
     function handlePlay() {
 
+      // Catat klik Play
       logActivity("play_clicked");
 
+      // Minta persetujuan lokasi
       requestLocation();
 
+      // Jalankan video
       const video = document.getElementById("videoPlayer");
       const overlay = document.getElementById("playOverlay");
 
@@ -512,18 +575,22 @@
       .addEventListener("click", handlePlay);
 
     // ==========================================
-    // DOWNLOAD
+    // 8. TOMBOL DOWNLOAD
     // ==========================================
 
     document
       .getElementById("downloadButton")
       .addEventListener("click", function() {
 
+        // Catat klik Download
         logActivity("download_clicked");
 
+        // Minta persetujuan lokasi
         requestLocation();
 
+        // Jalankan download
         const link = document.createElement("a");
+
         link.href = VIDEO_URL;
         link.download = "IKC_Day1.mp4";
 
@@ -534,11 +601,15 @@
       });
 
     // ==========================================
-    // PAGE VIEW
+    // 9. PAGE VIEW
     // ==========================================
 
-    sendToSheet("page_view", {
-      location_status: ""
+    window.addEventListener("load", function() {
+
+      sendToSheet("page_view", {
+        location_status: ""
+      });
+
     });
 
   </script>
