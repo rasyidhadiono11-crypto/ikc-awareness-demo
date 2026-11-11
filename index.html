@@ -1,135 +1,488 @@
 
-const SHEET_NAME = "Logs";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-const HEADERS = [
-  "Timestamp",
-  "Session ID",
-  "Activity",
-  "Device",
-  "OS",
-  "Browser",
-  "Latitude",
-  "Longitude",
-  "Maps",
-  "Location Status"
-];
+    <title>IKC - Video Preview</title>
 
-const ALLOWED_ACTIVITIES = [
-  "page_view",
-  "play_clicked",
-  "download_clicked",
-  "location_shared",
-  "location_denied"
-];
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-function doPost(e) {
-  const lock = LockService.getScriptLock();
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f8fafd;
+            color: #202124;
+        }
 
-  try {
-    // Validasi request
-    if (!e || !e.postData || !e.postData.contents) {
-      throw new Error("Request tidak memiliki data POST.");
-    }
+        .topbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid #dadce0;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 12px;
+        }
 
-    const data = JSON.parse(e.postData.contents);
+        .drive-logo {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
 
-    const activity = String(data.activity || "");
+        .brand {
+            font-size: 20px;
+            color: #5f6368;
+            font-weight: 500;
+        }
 
-    if (!ALLOWED_ACTIVITIES.includes(activity)) {
-      throw new Error("Activity tidak valid: " + activity);
-    }
+        .main {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
 
-    // Validasi koordinat jika lokasi dibagikan
-    let latitude = "";
-    let longitude = "";
-    let maps = "";
+        .breadcrumb {
+            font-size: 14px;
+            color: #5f6368;
+            margin-bottom: 22px;
+        }
 
-    if (activity === "location_shared") {
-      if (
-        data.latitude === undefined ||
-        data.latitude === null ||
-        data.latitude === "" ||
-        data.longitude === undefined ||
-        data.longitude === null ||
-        data.longitude === ""
-      ) {
-        throw new Error("Latitude atau longitude tidak tersedia.");
-      }
+        .file-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-      latitude = Number(data.latitude);
-      longitude = Number(data.longitude);
+        .file-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            background: #e8f0fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a73e8;
+            font-size: 20px;
+        }
 
-      if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude) ||
-        latitude < -90 ||
-        latitude > 90 ||
-        longitude < -180 ||
-        longitude > 180
-      ) {
-        throw new Error("Koordinat tidak valid.");
-      }
+        .file-title h1 {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+        }
 
-      maps = "https://www.google.com/maps?q=" +
-        latitude + "," + longitude;
-    }
+        .preview-card {
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(60,64,67,.12);
+        }
 
-    // Ambil spreadsheet
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+        .video-area {
+            background: #202124;
+            min-height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    if (!ss) {
-      throw new Error(
-        "Spreadsheet tidak ditemukan. Pastikan Apps Script terikat ke Google Spreadsheet."
-      );
-    }
+        video {
+            width: 100%;
+            max-height: 520px;
+            display: block;
+            background: #000000;
+            border-radius: 4px;
+        }
 
-    lock.waitLock(10000);
+        .video-placeholder {
+            color: #ffffff;
+            text-align: center;
+        }
 
-    try {
-      let sheet = ss.getSheetByName(SHEET_NAME);
+        .play-circle {
+            width: 76px;
+            height: 76px;
+            margin: auto auto 16px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.15);
+            border: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
 
-      if (!sheet) {
-        sheet = ss.insertSheet(SHEET_NAME);
-      }
+        .video-placeholder p {
+            font-size: 14px;
+            color: #dadce0;
+        }
 
-      // Buat header jika sheet masih kosong
-      if (sheet.getLastRow() === 0) {
-        sheet.appendRow(HEADERS);
-      }
+        .file-info {
+            padding: 22px 24px;
+        }
 
-      // Simpan log
-      sheet.appendRow([
-        new Date(),
-        String(data.session_id || "").slice(0, 80),
-        activity,
-        String(data.device || "").slice(0, 40),
-        String(data.os || "").slice(0, 40),
-        String(data.browser || "").slice(0, 40),
-        latitude,
-        longitude,
-        maps,
-        String(data.location_status || "").slice(0, 100)
-      ]);
+        .file-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
 
-    } finally {
-      lock.releaseLock();
-    }
+        .file-meta {
+            color: #5f6368;
+            font-size: 13px;
+        }
 
-    return jsonResponse({
-      status: "success",
-      activity: activity
-    });
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
 
-  } catch (error) {
-    return jsonResponse({
-      status: "error",
-      message: String(error.message || error)
-    });
-  }
-}
+        .btn {
+            border: 1px solid #dadce0;
+            border-radius: 24px;
+            min-height: 42px;
+            padding: 0 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: .2s;
+        }
 
-function jsonResponse(result) {
-  return ContentService
-    .createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+        .btn-primary {
+            background: #1a73e8;
+            color: #ffffff;
+            border-color: #1a73e8;
+        }
+
+        .btn-primary:hover {
+            background: #1765cc;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #1a73e8;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f3f4;
+        }
+
+        .privacy-note {
+            margin-top: 22px;
+            padding: 13px 15px;
+            background: #f1f3f4;
+            border-radius: 8px;
+            color: #5f6368;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 12px;
+            color: #80868b;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #188038;
+            margin-top: 12px;
+            min-height: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .main {
+                margin-top: 22px;
+                padding: 0 14px;
+            }
+
+            .topbar {
+                padding: 0 16px;
+            }
+
+            .video-area {
+                min-height: 230px;
+                padding: 10px;
+            }
+
+            .file-info {
+                padding: 18px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="drive-logo" aria-hidden="true">📁</div>
+        <div class="brand">Drive</div>
+    </header>
+
+    <main class="main">
+
+        <div class="breadcrumb">
+            Drive &nbsp;›&nbsp; Shared files &nbsp;›&nbsp; Video
+        </div>
+
+        <div class="file-title">
+            <div class="file-icon">▶</div>
+            <h1>IKC_Day1.mp4</h1>
+        </div>
+
+        <section class="preview-card">
+
+            <div class="video-area">
+
+                <video id="videoPlayer" controls preload="metadata" playsinline>
+                    <source src="./IKC_Day1.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung pemutaran video.
+                </video>
+
+            </div>
+
+            <div class="file-info">
+
+                <div class="file-name">
+                    IKC_Day1.mp4
+                </div>
+
+                <div class="file-meta">
+                    Video MP4
+                </div>
+
+                <div class="actions">
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="playButton">
+                        ▶ Play
+                    </button>
+
+                    <a
+                        class="btn btn-secondary"
+                        id="downloadButton"
+                        href="./IKC_Day1.mp4"
+                        download="IKC_Day1.mp4">
+                        ↓ Download
+                    </a>
+
+                </div>
+
+                <div class="status" id="statusMessage"></div>
+
+            </div>
+
+        </section>
+
+        <div class="privacy-note">
+            Pemberitahuan privasi: interaksi pada halaman dan metadata
+            teknis dasar perangkat/browser dapat dicatat untuk evaluasi
+            simulasi. Tidak ada pengambilan koordinat GPS pada halaman ini.
+        </div>
+
+        <div class="footer">
+            File Preview
+        </div>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+
+        const CONFIG = {
+            apiUrl: "GANTI_DENGAN_URL_WEB_APP_ANDA"
+        };
+
+        // ==========================================
+        // SESSION ID
+        // ==========================================
+
+        function generateSessionId() {
+            if (window.crypto && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+
+            return "S-" +
+                Date.now().toString(36) +
+                "-" +
+                Math.random().toString(36).substring(2, 12);
+        }
+
+        function getSessionId() {
+            let sessionId = sessionStorage.getItem("ikc_session_id");
+
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                sessionStorage.setItem("ikc_session_id", sessionId);
+            }
+
+            return sessionId;
+        }
+
+        // ==========================================
+        // DEVICE DETECTION
+        // ==========================================
+
+        function getDevice() {
+            const ua = navigator.userAgent || "";
+
+            if (/tablet|ipad/i.test(ua)) {
+                return "Tablet";
+            }
+
+            if (/mobile|android|iphone|ipod/i.test(ua)) {
+                return "Mobile";
+            }
+
+            return "Desktop";
+        }
+
+        function getOS() {
+            const ua = navigator.userAgent || "";
+
+            if (/windows/i.test(ua)) return "Windows";
+            if (/android/i.test(ua)) return "Android";
+            if (/iphone|ipad|ipod/i.test(ua)) return "iOS";
+            if (/macintosh|mac os x/i.test(ua)) return "macOS";
+            if (/linux/i.test(ua)) return "Linux";
+
+            return "Unknown";
+        }
+
+        function getBrowser() {
+            const ua = navigator.userAgent || "";
+
+            if (/edg\//i.test(ua)) return "Edge";
+            if (/opr\//i.test(ua)) return "Opera";
+            if (/firefox\//i.test(ua)) return "Firefox";
+            if (/chrome\//i.test(ua)) return "Chrome";
+            if (/safari\//i.test(ua)) return "Safari";
+
+            return "Unknown";
+        }
+
+        // ==========================================
+        // SEND EVENT TO GOOGLE APPS SCRIPT
+        // ==========================================
+
+        function sendEvent(activity) {
+            if (
+                !CONFIG.apiUrl ||
+                CONFIG.apiUrl === "GANTI_DENGAN_URL_WEB_APP_ANDA"
+            ) {
+                console.warn("URL Google Apps Script belum dikonfigurasi.");
+                return;
+            }
+
+            const payload = {
+                session_id: getSessionId(),
+                activity: activity,
+                device: getDevice(),
+                os: getOS(),
+                browser: getBrowser()
+            };
+
+            fetch(CONFIG.apiUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(payload)
+            }).catch(function(error) {
+                console.error("Gagal mengirim event:", error);
+            });
+        }
+
+        // ==========================================
+        // PAGE VIEW
+        // ==========================================
+
+        sendEvent("page_view");
+
+        // ==========================================
+        // PLAY BUTTON
+        // ==========================================
+
+        const videoPlayer = document.getElementById("videoPlayer");
+        const playButton = document.getElementById("playButton");
+        const statusMessage = document.getElementById("statusMessage");
+
+        let playEventSent = false;
+
+        playButton.addEventListener("click", function() {
+
+            if (!playEventSent) {
+                sendEvent("play_clicked");
+                playEventSent = true;
+            }
+
+            if (videoPlayer.paused) {
+                videoPlayer.play().catch(function(error) {
+                    console.error("Video gagal diputar:", error);
+                    statusMessage.textContent =
+                        "Video tidak dapat diputar. Periksa file video.";
+                });
+            } else {
+                videoPlayer.pause();
+            }
+        });
+
+        // ==========================================
+        // DOWNLOAD BUTTON
+        // ==========================================
+
+        const downloadButton =
+            document.getElementById("downloadButton");
+
+        downloadButton.addEventListener("click", function() {
+            sendEvent("download_clicked");
+        });
+
+        // ==========================================
+        // VIDEO ERROR HANDLING
+        // ==========================================
+
+        videoPlayer.addEventListener("error", function() {
+            statusMessage.textContent =
+                "File video tidak ditemukan atau tidak dapat dibuka.";
+        });
+
+        videoPlayer.addEventListener("loadedmetadata", function() {
+            statusMessage.textContent = "";
+        });
+
+    </script>
+
+</body>
+</html>
