@@ -1,423 +1,105 @@
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
-<title>Drive</title>
+const SHEET_NAME = "Logs";
 
-<style>
-* {
-    box-sizing: border-box;
-}
+const HEADERS = [
+  "Timestamp",
+  "Session ID",
+  "Activity",
+  "Device",
+  "OS",
+  "Browser",
+  "Latitude",
+  "Longitude",
+  "Maps",
+  "Location Status"
+];
 
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f8fafd;
-    color: #202124;
-}
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents || "{}");
 
-.header {
-    height: 64px;
-    background: #fff;
-    border-bottom: 1px solid #dadce0;
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-}
+    const allowed = [
+      "page_view",
+      "play_clicked",
+      "location_shared",
+      "location_denied"
+    ];
 
-.logo {
-    font-size: 22px;
-    color: #4285f4;
-    font-weight: 500;
-}
-
-.container {
-    max-width: 900px;
-    margin: 35px auto;
-    padding: 0 16px;
-}
-
-.breadcrumb {
-    font-size: 13px;
-    color: #5f6368;
-    margin-bottom: 18px;
-}
-
-.card {
-    background: #fff;
-    border: 1px solid #dadce0;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.preview {
-    height: 350px;
-    background: #202124;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-    gap: 16px;
-}
-
-.play-circle {
-    width: 76px;
-    height: 76px;
-    border: 2px solid white;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.play {
-    width: 0;
-    height: 0;
-    border-top: 13px solid transparent;
-    border-bottom: 13px solid transparent;
-    border-left: 21px solid white;
-    margin-left: 5px;
-}
-
-.preview small {
-    color: #bdc1c6;
-}
-
-.details {
-    padding: 25px;
-}
-
-.filename {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.subtitle {
-    color: #5f6368;
-    font-size: 13px;
-}
-
-.actions {
-    margin-top: 22px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-button {
-    border: 0;
-    border-radius: 6px;
-    padding: 12px 22px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.primary {
-    color: white;
-    background: #1a73e8;
-}
-
-.primary:hover {
-    background: #1558b0;
-}
-
-.secondary {
-    color: #1a73e8;
-    background: white;
-    border: 1px solid #dadce0;
-}
-
-.privacy {
-    max-width: 900px;
-    margin: 16px auto;
-    padding: 0 16px;
-    color: #5f6368;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-@media(max-width:600px) {
-    .container {
-        margin: 20px auto;
+    if (!allowed.includes(data.activity)) {
+      throw new Error("Activity tidak valid");
     }
 
-    .preview {
-        height: 250px;
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(SHEET_NAME);
+
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_NAME);
     }
 
-    .details {
-        padding: 20px;
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(HEADERS);
     }
 
-    .actions button {
-        width: 100%;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<header class="header">
-    <div class="logo">Drive</div>
-</header>
-
-<main class="container">
-
-    <div class="breadcrumb">
-        My Drive &nbsp;›&nbsp; IKC Awareness &nbsp;›&nbsp; Video
-    </div>
-
-    <section class="card">
-
-        <div class="preview">
-            <div class="play-circle">
-                <div class="play"></div>
-            </div>
-
-            <div>Pratinjau video</div>
-            <small>IKC_Day1.mp4</small>
-        </div>
-
-        <div class="details">
-
-            <div class="filename">
-                IKC_Day1.mp4
-            </div>
-
-            <div class="subtitle">
-                Video file
-            </div>
-
-            <div class="actions">
-
-                <button class="primary" id="openVideo">
-                    Open video
-                </button>
-
-                <button class="secondary" id="shareLocation">
-                    Bagikan lokasi
-                </button>
-
-            </div>
-
-        </div>
-
-    </section>
-
-</main>
-
-<p class="privacy">
-    Informasi privasi: interaksi dan metadata teknis dasar dapat dicatat
-    untuk evaluasi simulasi. Pembagian lokasi bersifat opsional dan
-    memerlukan persetujuan izin lokasi melalui browser.
-</p>
-
-<script>
-"use strict";
-
-/* KONFIGURASI BACKEND */
-const API_URL = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
-
-const SESSION_KEY = "ikc_awareness_session_id";
-
-function getSessionId() {
-
-    let id = sessionStorage.getItem(SESSION_KEY);
-
-    if (!id) {
-        id = crypto.randomUUID
-            ? crypto.randomUUID()
-            : "SESSION-" + Date.now() + "-" +
-              Math.random().toString(16).slice(2);
-
-        sessionStorage.setItem(SESSION_KEY, id);
-    }
-
-    return id;
-}
-
-const SESSION_ID = getSessionId();
-
-
-/* METADATA PERANGKAT */
-
-function getDeviceInfo() {
-
-    const ua = navigator.userAgent || "";
-
-    let device = "Desktop";
-    let os = "Unknown";
-    let browser = "Unknown";
-
-    if (/Android/i.test(ua)) os = "Android";
-    else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
-    else if (/Windows/i.test(ua)) os = "Windows";
-    else if (/Macintosh|Mac OS X/i.test(ua)) os = "macOS";
-    else if (/Linux/i.test(ua)) os = "Linux";
-
-    if (/Mobi|Android|iPhone|iPod/i.test(ua)) {
-        device = "Mobile";
-    } else if (/iPad|Tablet/i.test(ua)) {
-        device = "Tablet";
-    }
-
-    if (/Edg\//i.test(ua)) browser = "Edge";
-    else if (/SamsungBrowser/i.test(ua)) browser = "Samsung Internet";
-    else if (/Firefox|FxiOS/i.test(ua)) browser = "Firefox";
-    else if (/Chrome|CriOS/i.test(ua)) browser = "Chrome";
-    else if (/Safari/i.test(ua)) browser = "Safari";
-
-    return {
-        device,
-        os,
-        browser,
-        language: navigator.language || "Unknown",
-        screen: screen.width + "x" + screen.height
-    };
-}
-
-
-/* KIRIM EVENT KE BACKEND */
-
-async function sendEvent(eventName, extra = {}) {
-
-    const payload = {
-        event: eventName,
-        session_id: SESSION_ID,
-        file: "IKC_Day1.mp4",
-        timestamp: new Date().toISOString(),
-        device_info: getDeviceInfo(),
-        ...extra
-    };
-
-    if (
-        !API_URL ||
-        API_URL.includes("PASTE_APPS_SCRIPT")
-    ) {
-        // Mode pengujian lokal sebelum backend dikonfigurasi.
-        try {
-            const key = "ikc_awareness_local_events";
-            const events = JSON.parse(
-                localStorage.getItem(key) || "[]"
-            );
-
-            events.push(payload);
-
-            localStorage.setItem(
-                key,
-                JSON.stringify(events)
-            );
-        } catch (e) {}
-
-        return;
-    }
+    const lock = LockService.getScriptLock();
+    lock.waitLock(10000);
 
     try {
-        await fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
-            body: JSON.stringify(payload),
-            keepalive: true
-        });
-    } catch (e) {}
-}
+      const latitude = data.activity === "location_shared"
+        ? Number(data.latitude)
+        : "";
 
+      const longitude = data.activity === "location_shared"
+        ? Number(data.longitude)
+        : "";
 
-/* KLIK OPEN VIDEO */
+      if (
+        data.activity === "location_shared" &&
+        (
+          !Number.isFinite(latitude) ||
+          !Number.isFinite(longitude) ||
+          latitude < -90 ||
+          latitude > 90 ||
+          longitude < -180 ||
+          longitude > 180
+        )
+      ) {
+        throw new Error("Koordinat tidak valid");
+      }
 
-document.getElementById("openVideo")
-.addEventListener("click", function() {
+      const maps = data.activity === "location_shared"
+        ? "https://www.google.com/maps?q=" +
+          latitude + "," + longitude
+        : "";
 
-    sendEvent("open_video_clicked");
+      sheet.appendRow([
+        new Date(),
+        String(data.session_id || "").slice(0, 80),
+        data.activity,
+        String(data.device || "").slice(0, 40),
+        String(data.os || "").slice(0, 40),
+        String(data.browser || "").slice(0, 40),
+        latitude,
+        longitude,
+        maps,
+        String(data.location_status || "").slice(0, 100)
+      ]);
 
-});
-
-
-/* BERBAGI LOKASI DENGAN PERSETUJUAN */
-
-document.getElementById("shareLocation")
-.addEventListener("click", function() {
-
-    if (!navigator.geolocation) {
-        sendEvent("location_unavailable");
-        return;
+    } finally {
+      lock.releaseLock();
     }
 
-    navigator.geolocation.getCurrentPosition(
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "success"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
 
-        function(position) {
-
-            const latitude =
-                position.coords.latitude;
-
-            const longitude =
-                position.coords.longitude;
-
-            const accuracy =
-                Math.round(position.coords.accuracy);
-
-            const mapsUrl =
-                "https://www.google.com/maps?q=" +
-                latitude + "," + longitude;
-
-            sendEvent(
-                "location_shared_with_permission",
-                {
-                    location: {
-                        latitude,
-                        longitude,
-                        accuracy_meters: accuracy
-                    },
-                    location_consent: true
-                }
-            );
-
-            window.open(
-                mapsUrl,
-                "_blank",
-                "noopener,noreferrer"
-            );
-
-        },
-
-        function(error) {
-
-            sendEvent(
-                "location_not_shared",
-                {
-                    location_consent: false,
-                    location_error: error.code
-                }
-            );
-
-        },
-
-        {
-            enableHighAccuracy: false,
-            timeout: 12000,
-            maximumAge: 60000
-        }
-
-    );
-
-});
-
-
-/* KUNJUNGAN HALAMAN */
-
-sendEvent("page_view");
-
-</script>
-
-</body>
-</html>
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: String(error.message || error)
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
