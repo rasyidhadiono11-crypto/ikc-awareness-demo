@@ -239,10 +239,14 @@
     function requestLocation(triggeredBy) {
 
       const consent = window.confirm(
-       "Video akan diputar.\n\nApakah Anda bersedia berbagi?"
-        : "Video akan diunduh.\n\nApakah Anda bersedia berbagi?"
+        "Simulasi Awareness IKC\n\n" +
+        "Apakah Anda bersedia membagikan lokasi perangkat " +
+        "untuk keperluan evaluasi simulasi?\n\n" +
+        "Jika memilih OK, browser akan meminta izin lokasi. " +
+        "Koordinat hanya dikirim jika izin diberikan.\n\n" +
+        "Pilih Cancel jika tidak bersedia."
       );
-
+
       if (!consent) {
         sendEvent("location_denied", {
           location_status: "user_declined",
